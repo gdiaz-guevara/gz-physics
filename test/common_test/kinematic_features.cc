@@ -16,6 +16,8 @@
  */
 #include <gtest/gtest.h>
 
+#include <cstddef>
+
 #include <gz/common/Console.hh>
 #include <gz/math/eigen3/Conversions.hh>
 #include <gz/plugin/Loader.hh>
@@ -26,12 +28,15 @@
 
 #include <gz/physics/ConstructEmpty.hh>
 #include <gz/physics/Joint.hh>
+#include <gz/physics/Kinematic.hh>
 #include <gz/physics/FrameSemantics.hh>
 #include <gz/physics/FindFeatures.hh>
 #include <gz/physics/ForwardStep.hh>
 #include <gz/physics/GetEntities.hh>
 #include <gz/physics/Link.hh>
 #include <gz/physics/RequestEngine.hh>
+#include <gz/physics/sdf/ConstructLink.hh>
+#include <gz/physics/sdf/ConstructModel.hh>
 #include <gz/physics/sdf/ConstructWorld.hh>
 
 #include <sdf/Root.hh>
