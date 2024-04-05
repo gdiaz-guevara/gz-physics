@@ -183,6 +183,8 @@ TYPED_TEST(KinematicFeaturesTest, JointFrameSemantics)
 
 TYPED_TEST(KinematicFeaturesTest, LinkFrameSemanticsPose)
 {
+  // Load 2 kinematic links connected by a revolute joint.
+  // Make one of the links dynamic and verify its motion
   for (const std::string &name : this->pluginNames)
   {
     std::cout << "Testing plugin: " << name << std::endl;
