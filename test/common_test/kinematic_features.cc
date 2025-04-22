@@ -30,6 +30,7 @@
 #include <gz/physics/Joint.hh>
 #include <gz/physics/KinematicLink.hh>
 #include <gz/physics/FrameSemantics.hh>
+#include <gz/physics/FreeGroup.hh>
 #include <gz/physics/FindFeatures.hh>
 #include <gz/physics/ForwardStep.hh>
 #include <gz/physics/GetEntities.hh>
@@ -270,6 +271,9 @@ TYPED_TEST(KinematicFeaturesTest, LinkFrameSemanticsPose)
 }
 
 using SetKinematicFeaturesList = gz::physics::FeatureList<
+  gz::physics::FindFreeGroupFeature,
+  gz::physics::SetFreeGroupWorldPose,
+  gz::physics::SetFreeGroupWorldVelocity,
   gz::physics::sdf::ConstructSdfModel,
   gz::physics::sdf::ConstructSdfWorld,
   gz::physics::ForwardStep,
@@ -330,6 +334,8 @@ TEST_F(SetKinematicTestFeaturesList, SetKinematic)
     ASSERT_NE(nullptr, model);
     auto link = model->GetLink("link");
     ASSERT_NE(nullptr, link);
+    auto freeGroupLink = link->FindFreeGroup();
+    ASSERT_NE(nullptr, freeGroupLink);
 
     // verify sphere initial state
     gz::math::Pose3d initialPose(0, 0, 10, 0, 0, 0);
@@ -411,6 +417,30 @@ TEST_F(SetKinematicTestFeaturesList, SetKinematic)
     EXPECT_NEAR(expectedVelZ, frameData.linearVelocity.z(), 1e-2);
     EXPECT_EQ(gz::math::Vector3d::Zero,
               gz::math::eigen3::convert(frameData.angularVelocity));
+
+    // Verify model move by setting linear and angular velocity
+    freeGroupLink->SetWorldLinearVelocity(
+      gz::math::eigen3::convert(gz::math::Vector3d(0.4, 0.5, 0.0)));
+    freeGroupLink->SetWorldAngularVelocity(
+      gz::math::eigen3::convert(gz::math::Vector3d(0.4, 0.5, 0.0)));
+
+    for (std::size_t i = 0; i < steps; ++i)
+    {
+      world->Step(output, state, input);
+    }
+    frameData = link->FrameDataRelativeToWorld();
+
+    // Verify the sphere moves
+    EXPECT_NEAR(0.4 * (2 * stepSize),
+      frameData.pose.translation().x(), 1e-3);
+    EXPECT_NEAR(0.5 * (2 * stepSize),
+      frameData.pose.translation().y(), 1e-3);
+    EXPECT_NEAR(expectedPosZ,
+      frameData.pose.translation().z(), 1e-2);
+    EXPECT_EQ(gz::math::Vector3d(0.4, 0.5, 0.0),
+      gz::math::eigen3::convert(frameData.linearVelocity));
+    EXPECT_EQ(gz::math::Vector3d(0.4, 0.5, 0.0),
+      gz::math::eigen3::convert(frameData.angularVelocity));
   }
 }
 

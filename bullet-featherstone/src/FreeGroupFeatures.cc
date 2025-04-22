@@ -140,6 +140,23 @@ void FreeGroupFeatures::SetFreeGroupWorldAngularVelocity(
 
   if (model)
   {
+#if BT_BULLET_VERSION >= 307
+    // When the rigid body is kinematic, to move the model with
+    // velocity commands, it is necessary to create a predicTransform
+    // to move the model with the Base World transform; see the
+    // example for reference:
+    // https://github.com/bulletphysics/bullet3/blob/master/examples/MultiBody/KinematicMultiBodyExample.cpp#L38-L41
+    if (model->body->isBaseKinematic())
+    {
+      auto* world = this->ReferenceInterface<WorldInfo>(model->world);
+      btTransform predictedTrans;
+      btTransformUtil::integrateTransform(
+        model->body->getBaseWorldTransform(),
+        model->body->getBaseVel(),
+        convertVec(_angularVelocity), world->stepSize, predictedTrans);
+      model->body->setBaseWorldTransform(predictedTrans);
+    }
+#endif
     model->body->setBaseOmega(convertVec(_angularVelocity));
     model->body->wakeUp();
   }
@@ -151,9 +168,28 @@ void FreeGroupFeatures::SetFreeGroupWorldLinearVelocity(
 {
   // Free groups in bullet-featherstone are always represented by ModelInfo
   const auto *model = this->ReferenceInterface<ModelInfo>(_groupID);
-  // Set Base Vel
   if (model)
   {
+#if BT_BULLET_VERSION >= 307
+    // When the rigid body is kinematic, to move the model with
+    // velocity commands, it is necessary to create a predicTransform
+    // to move the model with the Base World transform; see the
+    // example for reference:
+    // https://github.com/bulletphysics/bullet3/blob/master/examples/MultiBody/KinematicMultiBodyExample.cpp#L38-L41
+    if (model->body->isBaseKinematic())
+    {
+      auto* world = this->ReferenceInterface<WorldInfo>(model->world);
+      btTransform predictedTrans;
+      btTransformUtil::integrateTransform(
+        model->body->getBaseWorldTransform(),
+        convertVec(_linearVelocity),
+        model->body->getBaseOmega(),
+        world->stepSize,
+        predictedTrans);
+      model->body->setBaseWorldTransform(predictedTrans);
+    }
+#endif
+    // Set Base Vel
     model->body->setBaseVel(convertVec(_linearVelocity));
     model->body->wakeUp();
   }
