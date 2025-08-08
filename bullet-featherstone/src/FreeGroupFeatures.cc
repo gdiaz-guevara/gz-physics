@@ -154,7 +154,7 @@ void FreeGroupFeatures::SetFreeGroupWorldAngularVelocity(
         model->body->getBaseWorldTransform(),
         model->body->getBaseVel(),
         convertVec(_angularVelocity), world->stepSize, predictedTrans);
-      model->body->setBaseWorldTransform(predictedTrans);
+      model->body->SetBaseWorldTransform(predictedTrans);
     }
 #endif
     model->body->setBaseOmega(convertVec(_angularVelocity));
@@ -186,7 +186,7 @@ void FreeGroupFeatures::SetFreeGroupWorldLinearVelocity(
         model->body->getBaseOmega(),
         world->stepSize,
         predictedTrans);
-      model->body->setBaseWorldTransform(predictedTrans);
+      model->body->SetBaseWorldTransform(predictedTrans);
     }
 #endif
     // Set Base Vel
